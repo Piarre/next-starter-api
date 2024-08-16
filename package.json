@@ -1,0 +1,19 @@
+{
+  "name": "api",
+  "scripts": {
+    "dev": "clear && bun run --hot src/index.ts",
+    "dev:debug": "bun --inspect-brk=127.0.0.1:5000/index src/index.ts",
+    "build": "bun build src/index.ts --target node --outdir dist"
+  },
+  "dependencies": {
+    "cron": "^3.1.7",
+    "execa": "^9.3.0",
+    "hono": "^4.5.5",
+    "path": "^0.12.7",
+    "pino": "^9.3.2",
+    "pino-pretty": "^11.2.2"
+  },
+  "devDependencies": {
+    "@types/bun": "latest"
+  }
+}
