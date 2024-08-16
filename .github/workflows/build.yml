@@ -27,4 +27,5 @@ jobs:
             cd next-starter-api
             touch start.sh && echo "bun run dist/index.js" >> start.sh
             bun install
+            bun build
             pm2 start ./start.sh --name "next-starter-api"
