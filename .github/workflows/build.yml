@@ -1,0 +1,30 @@
+name: Deploy api
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    environment: production
+    strategy:
+      matrix:
+        node-version: [20.12.0]
+    steps:
+      - name: executing remote ssh commands using password
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          password: ${{ secrets.PASSWORD }}
+          port: ${{ secrets.PORT }}
+          script: |
+            cd /home/ubuntu
+            rm -rf next-starter-api
+            git clone https://github.com/Piarre/next-starter-api
+            cd next-starter-api
+            touch start.sh && echo "bun run dist/index.js" >> start.sh
+            bun install
+            pm2 start ./start.sh --name "next-starter-api"
