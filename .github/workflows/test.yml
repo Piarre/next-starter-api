@@ -20,8 +20,17 @@ jobs:
           bun install
         env:
           CI: true
+      - name: Start server with screen
+        run: |
+          screen -dmS api-server-stage bun run start
+        env:
+          CI: true
       - name: Run tests locally
-        run: bun run test
+        run: |
+          bun run test
+      - name: Stop and remove screen session
+        run: |
+          screen -S api-server-stage -X quit
       - name: Public Stage image to GHCR
         uses: elgohr/Publish-Docker-Github-Action@v4
         with:
