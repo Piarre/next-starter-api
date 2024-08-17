@@ -77,7 +77,9 @@ app.post("/generate", async (c) => {
   await Bun.$`tar --exclude "node_modules*" -zcvf ${app.name}.tar.gz ${app.name}/`.cwd(tmpDir);
   await Bun.$`rm -rf ${app.name}`.cwd(tmpDir);
 
-  return c.json({ link: `https://next-starter-api.piarre.app/static/${app.tempName}/${app.name}.tar.gz` });
+  return c.json({
+    link: `https://next-starter-api.piarre.app/static/${app.tempName}/${app.name}.tar.gz`,
+  });
 });
 
 // Get a random MD5 hash

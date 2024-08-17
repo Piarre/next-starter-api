@@ -10,11 +10,11 @@ const getTempName = (): string => {
 
 const getAppName = (command: string) => {
   const splittedArgs = command.split(" ");
+  const isBun = splittedArgs[0] == "bun";
   const isNpx = splittedArgs[0] == "npx";
 
-  return command.split(" ")[isNpx ? 2 : 3];
+  return command.split(" ")[isBun || isNpx ? 3 : 4];
 };
-
 const getAlias = (command: string): string => {
   const splittedArgs = command.split(" ");
   const indexOfAlias = splittedArgs.indexOf("--import-alias");
@@ -38,7 +38,7 @@ const avoidCLIInteractive = (command: string): string => {
       ? command
       : command.replace(/yarn/g, "yarn --non-interactive");
   } else if (isPNPM) {
-    return command.includes("--yes") ? command : command.replace(/pnpm/g, "pnpm --yes");
+    return command.includes("--yes") ? command : command.replace(/\bpnpm\b/, "pnpm --yes");
   }
 
   return command;
