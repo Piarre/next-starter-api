@@ -2,7 +2,7 @@ import { Hono } from "hono";
 import { logger } from "hono/logger";
 import { cors } from "hono/cors";
 import { poweredBy } from "hono/powered-by";
-import { getAlias, getAppName, getTempName, replaceAlias } from "./lib/utils";
+import { avoidCLIInteractive, getAlias, getAppName, getTempName, replaceAlias } from "./lib/utils";
 import { _App, RootLayout, TailwindConfig } from "./lib/data/shadcn";
 import { serveStatic } from "hono/bun";
 import job from "./lib/cron";
@@ -24,6 +24,7 @@ export const TEMP_DIR = process.env.TEMP_DIR || "temp";
 app.post("/generate", async (c) => {
   let { command } = await c.req.json<{ command: string }>();
   command = command.includes("--skip-install") ? command : `${command} --skip-install`;
+  command = avoidCLIInteractive(command);
 
   const app = {
     name: getAppName(command),
@@ -76,7 +77,7 @@ app.post("/generate", async (c) => {
   await Bun.$`tar --exclude "node_modules*" -zcvf ${app.name}.tar.gz ${app.name}/`.cwd(tmpDir);
   await Bun.$`rm -rf ${app.name}`.cwd(tmpDir);
 
-  return c.json({ link: `http://localhost:2025/static/${app.tempName}/${app.name}.tar.gz` });
+  return c.json({ link: `https://next-starter-api.piarre.app/static/${app.tempName}/${app.name}.tar.gz` });
 });
 
 // Get a random MD5 hash

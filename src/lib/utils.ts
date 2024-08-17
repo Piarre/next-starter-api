@@ -24,6 +24,26 @@ const getAlias = (command: string): string => {
   return splittedArgs[indexOfAlias + 1].replace(/\"/g, "").split("/")[0].format();
 };
 
+const avoidCLIInteractive = (command: string): string => {
+  const splittedArgs = command.split(" ");
+
+  const isNPX = splittedArgs[0] == "npx";
+  const isYarn = splittedArgs[0] == "yarn";
+  const isPNPM = splittedArgs[0] == "pnpm";
+
+  if (isNPX) {
+    return command.includes("--yes") ? command : command.replace(/npx/g, "npx --yes");
+  } else if (isYarn) {
+    return command.includes("--non-interactive")
+      ? command
+      : command.replace(/yarn/g, "yarn --non-interactive");
+  } else if (isPNPM) {
+    return command.includes("--yes") ? command : command.replace(/pnpm/g, "pnpm --yes");
+  }
+
+  return command;
+};
+
 const replaceAlias = (content: string, alias: string) => content.replace(/ALIAS/g, alias);
 
-export { getTempName, getAppName, getAlias, replaceAlias };
+export { getTempName, getAppName, getAlias, replaceAlias, avoidCLIInteractive };
