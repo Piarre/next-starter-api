@@ -1,6 +1,9 @@
 name: Deploy API
 
 on:
+  push:
+    branches:
+      - "**"
   workflow_call:
 
 jobs:
@@ -11,14 +14,16 @@ jobs:
       matrix:
         node-version: [20.12.0]
     steps:
-      - uses: actions/checkout@v1
-      - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v1
-        with:
-          node-version: ${{ matrix.node-version }}
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
       - name: Install dependencies
         run: |
-          npm install
+          bun install
+        env:
+          CI: true
+      - name: Build API
+        run: |
+          bun run build
         env:
           CI: true
       - name: Publish to Github Packages Registry
