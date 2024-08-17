@@ -4,9 +4,9 @@ on:
   workflow_call:
 
 jobs:
-  build:
+  test:
+    permissions: write-all
     runs-on: self-hosted
-    environment: production
     strategy:
       matrix:
         node-version: [20.12.0]
