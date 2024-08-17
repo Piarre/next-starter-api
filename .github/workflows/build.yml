@@ -29,7 +29,7 @@ jobs:
       - name: Publish to Github Packages Registry
         uses: elgohr/Publish-Docker-Github-Action@v4
         with:
-          name: piarre/next-starter-api-stage
+          name: piarre/next-starter-api
           registry: ghcr.io
           username: piarre
           password: ${{ secrets.GITHUB_TOKEN }}
@@ -42,8 +42,13 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           export CONTAINER_NAME=$(docker ps -a -q --filter "name=next-starter-api")
+
+          if [ -z "$CONTAINER_NAME" ]; then
+            CONTAINER_NAME="next-starter-api"
+          fi
+
           docker login ghcr.io -u $GITHUB_USERNAME -p $GITHUB_TOKEN
-          docker pull ghcr.io/piarre/next-starter-api-stage:latest
+          docker pull ghcr.io/piarre/next-starter-api:latest
           docker stop $CONTAINER_NAME && docker rm $CONTAINER_NAME || true
           docker run -dit \
             --restart=always \
@@ -51,8 +56,8 @@ jobs:
             -p 2025:2025 \
             --label traefik.enable=true \
             --label traefik.http.routers.next-starter-api.entrypoints=websecure \
-            --label traefik.http.routers.next-starter-api.rule=Host\(`next-starter-api.piarre.app`\) \
+            --label traefik.http.routers.next-starter-api.rule="Host(\`next-starter-api.piarre.app\`)" \
             --label traefik.http.routers.next-starter-api.tls.certresolver=myresolver \
             --label traefik.http.services.next-starter-api.loadbalancer.server.port=2025 \
-            ghcr.io/piarre/next-starter-api-stage:latest
+            ghcr.io/piarre/next-starter-api:latest
           docker network connect proxy $CONTAINER_NAME
