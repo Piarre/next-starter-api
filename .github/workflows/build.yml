@@ -52,7 +52,8 @@ jobs:
           docker stop $CONTAINER_NAME && docker rm $CONTAINER_NAME || true
           docker run -dit \
             --restart=always \
-            --name $CONTAINER_NAME \
+            --name next-starter-api \
+            --network proxy \
             -p 2025:2025 \
             --label traefik.enable=true \
             --label traefik.http.routers.next-starter-api.entrypoints=websecure \
@@ -60,4 +61,3 @@ jobs:
             --label traefik.http.routers.next-starter-api.tls.certresolver=myresolver \
             --label traefik.http.services.next-starter-api.loadbalancer.server.port=2025 \
             ghcr.io/piarre/next-starter-api:latest
-          docker network connect proxy $CONTAINER_NAME
