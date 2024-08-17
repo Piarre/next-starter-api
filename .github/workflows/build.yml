@@ -24,8 +24,8 @@ jobs:
       - name: Publish to Github Packages Registry
         uses: elgohr/Publish-Docker-Github-Action@v4
         with:
-          name: piarre/next-starter-api/api
-          registry: docker.pkg.github.com
+          name: piarre/next-starter-api-stage
+          registry: ghcr.io
           username: piarre
           password: ${{ secrets.GITHUB_TOKEN }}
           dockerfile: Dockerfile
@@ -37,8 +37,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           export CONTAINER_NAME=$(docker ps -a -q --filter "name=next-starter-api")
-          docker login docker.pkg.github.com -u $GITHUB_USERNAME -p $GITHUB_TOKEN
-          docker pull docker.pkg.github.com/piarre/next-starter-api/api:latest
+          docker login ghcr.io -u $GITHUB_USERNAME -p $GITHUB_TOKEN
+          docker pull ghcr.io/piarre/next-starter-api-stage:latest
           docker stop $CONTAINER_NAME && docker rm $CONTAINER_NAME || true
           docker run -dit \
                   --restart=always \
@@ -49,5 +49,5 @@ jobs:
                   --label traefik.http.routers.next-starter-api.rule=Host(`next-starter-api.piarre.app`) \
                   --label traefik.http.routers.next-starter-api.tls.certresolver=myresolver \
                   --label traefik.http.services.next-starter-api.loadbalancer.server.port=2025 \
-                  docker.pkg.github.com/piarre/next-starter-api/api:latest
+                  ghcr.io/piarre/next-starter-api-stage:latest
           docker network connect proxy $CONTAINER_NAME

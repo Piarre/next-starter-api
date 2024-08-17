@@ -28,8 +28,8 @@ jobs:
       - name: Public Stage image to GHCR
         uses: elgohr/Publish-Docker-Github-Action@v4
         with:
-          name: piarre/next-starter-api/api-stage
-          registry: docker.pkg.github.com
+          name: piarre/next-starter-api-stage
+          registry: ghcr.io
           username: piarre
           password: ${{ secrets.GITHUB_TOKEN }}
           dockerfile: Dockerfile
@@ -42,12 +42,12 @@ jobs:
         run: |
           export CONTAINER_NAME=$(docker ps -a -q --filter "name=next-starter-api-stage")
           docker login docker.pkg.github.com -u $GITHUB_USERNAME -p $GITHUB_TOKEN
-          docker pull docker.pkg.github.com/piarre/next-starter-api/api-stage:latest
+          docker pull ghcr.io/piarre/next-starter-api-stage:latest
           docker stop $CONTAINER_NAME && docker rm $CONTAINER_NAME || true
           docker run -dit \
                   --name $CONTAINER_NAME \
                   -p 2125:2025 \
-                  docker.pkg.github.com/piarre/next-starter-api/api-stage:latest
+                  ghcr.io/piarre/next-starter-api-stage:latest
       - name: Check if image is still running
         run: |
           export CONTAINER_STATUS_STAGE=$(docker container inspect $(docker ps -a -q --filter "name=next-starter-api-stage") | jq -r '.[0].State.Status')
