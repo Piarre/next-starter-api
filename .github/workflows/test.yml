@@ -20,6 +20,11 @@ jobs:
           bun install
         env:
           CI: true
+      - name: Build API
+        run: |
+          bun run build
+        env:
+          CI: true
       - name: Public Stage image to GHCR
         uses: elgohr/Publish-Docker-Github-Action@v4
         with:
