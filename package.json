@@ -3,7 +3,8 @@
   "scripts": {
     "dev": "clear && bun run --hot src/index.ts",
     "dev:debug": "bun --inspect-brk=127.0.0.1:5000/index src/index.ts",
-    "build": "bun build src/index.ts --target node --outdir dist"
+    "build": "bun build src/index.ts --target node --outdir dist",
+    "test": "bun test --timeout 120000"
   },
   "dependencies": {
     "cron": "^3.1.7",

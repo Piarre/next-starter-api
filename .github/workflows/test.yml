@@ -1,7 +1,9 @@
 name: Deploy API
 
 on:
-  workflow_call:
+  push:
+    branches:
+      - "**"
 
 jobs:
   build:
@@ -18,36 +20,40 @@ jobs:
           node-version: ${{ matrix.node-version }}
       - name: Install dependencies
         run: |
-          npm install
+          bun install
         env:
           CI: true
-      - name: Publish to Github Packages Registry
+      - name: Run tests locally
+        run: bun run test
+      - name: Public Stage image to GHCR
         uses: elgohr/Publish-Docker-Github-Action@v4
         with:
-          name: piarre/next-starter-api/api
+          name: piarre/next-starter-api/api-stage
           registry: docker.pkg.github.com
           username: piarre
           password: ${{ secrets.GITHUB_TOKEN }}
           dockerfile: Dockerfile
           tags: latest
-      - name: Deploy package to server
+      - name: Deploy Stage image on server
         env:
           CI: true
           GITHUB_USERNAME: piarre
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          export CONTAINER_NAME=$(docker ps -a -q --filter "name=next-starter-api")
+          export CONTAINER_NAME=$(docker ps -a -q --filter "name=next-starter-api-stage")
           docker login docker.pkg.github.com -u $GITHUB_USERNAME -p $GITHUB_TOKEN
-          docker pull docker.pkg.github.com/piarre/next-starter-api/api:latest
+          docker pull docker.pkg.github.com/piarre/next-starter-api/api-stage:latest
           docker stop $CONTAINER_NAME && docker rm $CONTAINER_NAME || true
           docker run -dit \
-                  --restart=always \
                   --name $CONTAINER_NAME \
-                  -p 2025:2025 \
-                  --label traefik.enable=true \
-                  --label traefik.http.routers.next-starter-api.entrypoints=websecure \
-                  --label traefik.http.routers.next-starter-api.rule=Host(`next-starter-api.piarre.app`) \
-                  --label traefik.http.routers.next-starter-api.tls.certresolver=myresolver \
-                  --label traefik.http.services.next-starter-api.loadbalancer.server.port=2025 \
-                  docker.pkg.github.com/piarre/next-starter-api/api:latest
-          docker network connect proxy $CONTAINER_NAME
+                  -p 2125:2025 \
+                  docker.pkg.github.com/piarre/next-starter-api/api-stage:latest
+      - name: Check if image is still running
+        run: |
+          export CONTAINER_STATUS_STAGE=$(docker container inspect $(docker ps -a -q --filter "name=next-starter-api-stage") | jq -r '.[0].State.Status')
+          sleep 30
+          if [ $CONTAINER_STATUS_STAGE != "running" ]; then
+              exit 1
+          fi
+      - name: Call next workflow
+        uses: ./.github/workflows/build.yml

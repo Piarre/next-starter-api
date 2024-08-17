@@ -3,7 +3,6 @@ import { logger } from "hono/logger";
 import { cors } from "hono/cors";
 import { poweredBy } from "hono/powered-by";
 import { getAlias, getAppName, getTempName, replaceAlias } from "./lib/utils";
-import { execSync, exec } from "node:child_process";
 import { _App, RootLayout, TailwindConfig } from "./lib/data/shadcn";
 import { serveStatic } from "hono/bun";
 import job from "./lib/cron";
@@ -20,6 +19,7 @@ app.use(
 app.use(poweredBy());
 
 export const QUEUE: { name: string; date: number }[] = [];
+export const TEMP_DIR = process.env.TEMP_DIR || "temp";
 
 app.post("/generate", async (c) => {
   let { command } = await c.req.json<{ command: string }>();
@@ -36,7 +36,7 @@ app.post("/generate", async (c) => {
   } as const;
 
   const tmpDir = (
-    await Bun.$`cd temp/ && mkdir ${app.tempName} && cd ${app.tempName} && pwd`.nothrow().quiet()
+    await Bun.$`mkdir ${app.tempName} && cd ${app.tempName} && pwd`.cwd(TEMP_DIR).nothrow().quiet()
   ).stdout
     .toString()
     .trim();
@@ -45,7 +45,7 @@ app.post("/generate", async (c) => {
 
   QUEUE.push({ name: app.tempName, date: Date.now() });
 
-  await execSync(`${command}`, { cwd: tmpDir, stdio: "inherit" });
+  await Bun.$`${{ raw: command }}`.cwd(tmpDir);
 
   if (app.shadcn) {
     const { lang } = app;
@@ -57,9 +57,15 @@ app.post("/generate", async (c) => {
         replaceAlias(RootLayout[lang], app.alias),
       );
     } else if (app.srcDir && !app.app) {
-      await Bun.write(`${appPath}/src/pages/_app.${lang}${ext}`, replaceAlias(_App[lang], app.alias));
+      await Bun.write(
+        `${appPath}/src/pages/_app.${lang}${ext}`,
+        replaceAlias(_App[lang], app.alias),
+      );
     } else if (!app.srcDir && app.app) {
-      await Bun.write(`${appPath}/app/layout.${lang}${ext}`, replaceAlias(RootLayout[lang], app.alias));
+      await Bun.write(
+        `${appPath}/app/layout.${lang}${ext}`,
+        replaceAlias(RootLayout[lang], app.alias),
+      );
     } else if (!app.srcDir && !app.app) {
       await Bun.write(`${appPath}/pages/_app.${lang}${ext}`, replaceAlias(_App[lang], app.alias));
     }
@@ -67,9 +73,8 @@ app.post("/generate", async (c) => {
     await Bun.write(`${appPath}/tailwind.config.${lang}`, TailwindConfig[lang]);
   }
 
-  execSync(`tar --exclude "node_modules*" -zcvf ${app.name}.tar.gz ${app.name}/`, { cwd: tmpDir });
-
-  execSync(`rm -rf ${app.name}`, { cwd: tmpDir });
+  await Bun.$`tar --exclude "node_modules*" -zcvf ${app.name}.tar.gz ${app.name}/`.cwd(tmpDir);
+  await Bun.$`rm -rf ${app.name}`.cwd(tmpDir);
 
   return c.json({ link: `http://localhost:2025/static/${app.tempName}/${app.name}.tar.gz` });
 });
@@ -89,9 +94,12 @@ app.get(
   }),
 );
 
+app.get("/test", (c) => c.json({ message: "Hello, World!" }));
+
 job.start();
 
 export default {
   port: 2025,
+  hostname: "0.0.0.0",
   fetch: app.fetch,
 };
