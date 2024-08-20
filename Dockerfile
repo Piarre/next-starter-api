@@ -8,6 +8,7 @@ RUN npm install -g bun yarn pnpm --force
 RUN mkdir -p /usr/src/app/temp
 
 ENV TEMP_DIR=temp
+ENV APP_URL=https://next-starter-api.piarre.app
 
 EXPOSE 2025/tcp
 ENTRYPOINT [ "bun", "run", "index.js" ]
