@@ -89,7 +89,7 @@ app.post("/generate", async (c) => {
   });
 });
 
-app.get("/", (c) => c.json({ message: "Hello, World!" }));
+app.options("/healthcheck", (c) => c.json({ message: "UP" }));
 
 // Get a random MD5 hash
 app.get("/md5", (c) => c.text(getTempName()));
