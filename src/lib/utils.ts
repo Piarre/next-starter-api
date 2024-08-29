@@ -38,6 +38,6 @@ const getTempName = (): string => {
   return new Bun.CryptoHasher("md5").update(random.toString()).digest("hex");
 };
 
-const replaceAlias = (content: string, alias: string) => content.replace(/ALIAS/g, alias);
+const replaceAlias = (content: string, alias: string) => content.replace(/ALIAS/g, alias.split("/")[0]);
 
 export { getTempName, replaceAlias };
