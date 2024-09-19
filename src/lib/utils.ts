@@ -38,6 +38,16 @@ const getTempName = (): string => {
   return new Bun.CryptoHasher("md5").update(random.toString()).digest("hex");
 };
 
-const replaceAlias = (content: string, alias: string) => content.replace(/ALIAS/g, alias.split("/")[0]);
+const replaceAlias = (content: string, alias: string) =>
+  content.replace(/ALIAS/g, alias.split("/")[0]);
 
-export { getTempName, replaceAlias };
+const uptime = () => {
+  return {
+    days: Math.floor(process.uptime() / 86400),
+    hours: Math.floor((process.uptime() % 86400) / 3600),
+    minutes: Math.floor((process.uptime() % 3600) / 60),
+    seconds: Math.floor(process.uptime() % 60),
+  };
+};
+
+export { getTempName, replaceAlias, uptime };

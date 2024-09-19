@@ -9,7 +9,12 @@ import { serveStatic } from "hono/bun";
 import job from "./lib/cron";
 import { Command } from "./lib/types/command";
 
+import debugRoute from "./routes/debug";
+import staticRoute from "./routes/static";
+
 const app = new Hono();
+export const QUEUE: { name: string; date: number }[] = [];
+export const TEMP_DIR = process.env.TEMP_DIR || "temp";
 
 app.use(logger());
 app.use(
@@ -21,8 +26,7 @@ app.use(
 app.use(poweredBy());
 app.use(prettyJSON());
 
-export const QUEUE: { name: string; date: number }[] = [];
-export const TEMP_DIR = process.env.TEMP_DIR || "temp";
+app.get("/", (c) => c.json({ message: "Hello World" }));
 
 app.post("/generate", async (c) => {
   let command = await c.req.json<Command>();
@@ -89,22 +93,8 @@ app.post("/generate", async (c) => {
   });
 });
 
-app.options("/healthcheck", (c) => c.json({ message: "UP" }));
-
-// Get a random MD5 hash
-app.get("/md5", (c) => c.text(getTempName()));
-
-// Get the current queue
-app.get("/debug/queue", (c) => c.json(QUEUE));
-
-// Serve static files for download
-app.get(
-  "/static/*",
-  serveStatic({
-    root: "./",
-    rewriteRequestPath: (path) => path.replace(/^\/static/, "/temp"),
-  }),
-);
+app.route("/debug", debugRoute);
+app.route("/static/*", staticRoute);
 
 job.start();
 
