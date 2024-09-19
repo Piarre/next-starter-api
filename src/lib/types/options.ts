@@ -1,4 +1,4 @@
-export interface Options {
+interface Options {
   importAlias: string;
   name: string;
   tailwind: boolean;
@@ -10,3 +10,5 @@ export interface Options {
   cli: "npm" | "yarn" | "pnpm" | "bun";
   shadcnUi: boolean;
 }
+
+export { type Options };

@@ -4,7 +4,6 @@ import { cors } from "hono/cors";
 import { prettyJSON } from "hono/pretty-json";
 import { poweredBy } from "hono/powered-by";
 import { CreateCommand, getTempName, replaceAlias } from "./lib/utils";
-import { _App, RootLayout } from "./lib/data/shadcn";
 import job from "./lib/cron";
 import { Command } from "./lib/types/command";
 
