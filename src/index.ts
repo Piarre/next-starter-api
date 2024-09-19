@@ -4,8 +4,7 @@ import { cors } from "hono/cors";
 import { prettyJSON } from "hono/pretty-json";
 import { poweredBy } from "hono/powered-by";
 import { CreateCommand, getTempName, replaceAlias } from "./lib/utils";
-import { _App, RootLayout, TailwindConfig } from "./lib/data/shadcn";
-import { serveStatic } from "hono/bun";
+import { _App, RootLayout } from "./lib/data/shadcn";
 import job from "./lib/cron";
 import { Command } from "./lib/types/command";
 
@@ -31,7 +30,7 @@ app.get("/", (c) => c.json({ message: "Hello World" }));
 app.post("/generate", async (c) => {
   let command = await c.req.json<Command>();
 
-  let { name, app, srcDir, shadcnUi, importAlias: alias, lang, tailwind } = command;
+  let { name } = command;
 
   const tempName = getTempName();
 
@@ -52,32 +51,7 @@ app.post("/generate", async (c) => {
     .nothrow()
     .quiet();
 
-  if (shadcnUi) {
-    const ext = lang === "ts" ? "x" : "";
-
-    if (srcDir && app) {
-      await Bun.write(
-        `${appPath}/src/app/layout.${lang}${ext}`,
-        replaceAlias(RootLayout[lang], alias),
-      );
-    } else if (srcDir && !app) {
-      await Bun.write(`${appPath}/src/pages/_app.${lang}${ext}`, replaceAlias(_App[lang], alias));
-    } else if (!srcDir && app) {
-      await Bun.write(`${appPath}/app/layout.${lang}${ext}`, replaceAlias(RootLayout[lang], alias));
-    } else if (!srcDir && !app) {
-      await Bun.write(`${appPath}/pages/_app.${lang}${ext}`, replaceAlias(_App[lang], alias));
-    }
-
-    await Bun.write(`${appPath}/tailwind.config.${lang}`, TailwindConfig[lang]);
-  }
-
-  if (tailwind) await Bun.write(`${appPath}/tailwind.config.${lang}`, TailwindConfig[lang]);
-
-  await Bun.$`rm pnpm-lock.yaml yarn.lock bun.lockb package-lock.json`
-    .cwd(appPath)
-    .nothrow()
-    .quiet();
-
+  await Bun.$`rm bun.lockb package-lock.json`.cwd(appPath).nothrow().quiet();
   await Bun.$`rm -rf .git`.cwd(appPath).nothrow().quiet();
 
   await Bun.$`tar --exclude "node_modules*" -zcvf ${name}.tar.gz ${name}/`
