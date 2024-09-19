@@ -15,16 +15,14 @@ jobs:
       - uses: actions/checkout@v4
       - uses: oven-sh/setup-bun@v2
       - name: Install dependencies
-        run: |
-          bun install
+        run: bun install
         env:
           CI: true
-      - name: Build API
-        run: |
-          bun run build
+      - name: Build
+        run: bun run build
         env:
           CI: true
-      - name: Publish to Github Packages Registry
+      - name: Publish Docker Image
         uses: elgohr/Publish-Docker-Github-Action@v4
         with:
           name: piarre/next-starter-api
@@ -33,7 +31,7 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
           dockerfile: Dockerfile
           tags: latest
-      - name: Deploy package to server
+      - name: Deploy and run new image
         env:
           CI: true
           GITHUB_USERNAME: piarre
