@@ -23,10 +23,12 @@ export const CreateCommand = ({
   ${srcDir ? "--src-dir" : "--no-src-dir"} 
   --import-alias "${importAlias}" 
   --use-bun
+  --no-turbo
+  --skip-install
   ${
     shadcnUi &&
     `&& cd ${name}/
-  && bunx --bun shadcn-ui@latest init --defaults`
+  && bunx --bun shadcn@latest init --defaults`
   }`
     .replace(/\n/g, "")
     .replace(/\s+/g, " ");
